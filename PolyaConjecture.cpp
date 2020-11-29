@@ -16,8 +16,8 @@ class PolyaCalculator
     vector<short> num_factors = { 0 };
     int even_factors = 1;
 
-    bool do_print_factors;
-    bool do_print_primes;
+    bool do_print_factors = false;
+    bool do_print_primes = false;
 
 public:
     explicit PolyaCalculator(int total_numbers)
@@ -53,23 +53,30 @@ public:
 
     void run()
     {
-        int floor_sqrt_n = 1;
-        int next_square = (floor_sqrt_n + 1) * (floor_sqrt_n + 1);
-        int max_prime_to_consider = 1;
         int max_prime_idx_to_consider = -1;
+        int next_prime_square = 4;
 
         for (int n = 2; n <= total_numbers; ++n)
         {
-            if (n >= next_square)
-            {
-                ++floor_sqrt_n;
-                next_square = (floor_sqrt_n + 1) * (floor_sqrt_n + 1);
-            }
-
-            if (max_prime_to_consider < floor_sqrt_n && next_square <= total_numbers)
+            if (n >= next_prime_square)
             {
                 ++max_prime_idx_to_consider;
-                max_prime_to_consider = primes[max_prime_idx_to_consider];
+                if (max_prime_idx_to_consider < primes.size() - 1)
+                {
+                    auto next_prime = primes[max_prime_idx_to_consider + 1];
+                    next_prime_square = next_prime * next_prime;
+                }
+                else
+                {
+                    // n >= last prime squared, and it's the last item in the primes vector
+                    // This means that either we stopped adding primes because we reached the last prime
+                    // before sqrt(total_numbers), or that there were no primes between the last prime
+                    // and the last prime squared. The latter, however, is impossible due to Bertrand postulate
+                    // (https://en.wikipedia.org/wiki/Bertrand%27s_postulate). 
+                    // So, there are no more primes worth considering. We avoid switching to the next prime
+                    // by setting next_prime_square to a value exceeding total_numbers
+                    next_prime_square = total_numbers + 1;
+                }
             }
 
             auto factors = calc_num_prime_factors(n, max_prime_idx_to_consider);
