@@ -70,7 +70,7 @@ public:
 
             if (do_print_factors)
             {
-                cout << n << ":" << factors << ":" << odd_factors << ":" << even_factors << endl;
+                cout << n << ":" << (unsigned)factors << ":" << odd_factors << ":" << even_factors << endl;
             }
             else if (even_factors > odd_factors)
             {
