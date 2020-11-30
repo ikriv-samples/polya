@@ -56,7 +56,7 @@ public:
             }
         }
 
-        number even_factors = 0;
+        number even_factors = 1;
 
         for (number n = 2; n < total_numbers; ++n)
         {
