@@ -15,7 +15,6 @@ class PolyaCalculator
     vector<uint8_t> num_factors;
 
     bool do_print_factors = false;
-    bool do_print_primes = false;
 
 public:
     explicit PolyaCalculator(number total_numbers)
@@ -27,7 +26,6 @@ public:
     }
 
     void print_factors() { do_print_factors = true; }
-    void print_primes() { do_print_primes = true; }
 
     static number safe_multiply(number prime_power, number prime, number limit)
     {
@@ -96,28 +94,70 @@ void timed_run(PolyaCalculator& calc)
     cout << "Total time: " << seconds.count() << "s" << endl;
 }
 
+struct Options
+{
+    number max_n = 1000*1000*1000;
+    bool debug = false;
+    bool help = false;
+};
+
+void print_help()
+{
+    cout << "Verifies Polya conjecture. See https://en.wikipedia.org/wiki/P%C3%B3lya_conjecture \n"
+        << "Usage:\n"
+        << "PolyaConjecture [options] [max_n]\n"
+        << "Options:\n"
+        << "  --help, -?: show this info\n"
+        << "  --debug, -d: print debug information\n";
+}
+
+void get_options(int argc, char** argv, Options& options)
+{
+    if (argc == 1) return;
+    string arg = argv[1];
+    
+    if (arg == "--help" || arg == "-?")
+    {
+        options.help = true;
+        return;
+    }
+
+    if (arg == "--debug" || arg == "-d")
+    {
+        options.debug = true;
+        if (argc > 2)
+        {
+            arg = argv[2];
+        }
+        else
+        {
+            arg = "";
+        }
+    }
+
+    if (arg != "")
+    {
+        options.max_n = strtoull(arg.c_str(), nullptr, 10);
+    }
+}
+
 int main(int argc, char** argv)
 {
-    number max_n = 1000 * 1000 * 1000;
+    Options options;
+    get_options(argc, argv, options);
 
-    if (argc >= 2)
+    if (options.help)
     {
-        max_n = strtoull(argv[1], nullptr, 10);
+        print_help();
+        return 1;
     }
 
-    cout << "Evaluating Polya conjecture up to " << max_n << endl;
+    cout << "Evaluating Polya conjecture up to " << options.max_n << endl;
 
-    bool debug = false;
-    if (argc >= 3 && argv[2] == std::string("--debug"))
-    {
-        debug = true;
-    }
-
-    auto calc = PolyaCalculator(max_n);
-    if (debug)
+    auto calc = PolyaCalculator(options.max_n);
+    if (options.debug)
     {
         calc.print_factors();
-        calc.print_primes();
     }
 
     timed_run(calc);
