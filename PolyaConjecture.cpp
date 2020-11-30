@@ -37,8 +37,6 @@ public:
 
     void run()
     {
-        number count = 0;
-
         for (number prime = 2; prime <= total_numbers; ++prime)
         {
             if (prime % 200000 == 0) cerr << ".";
@@ -104,8 +102,10 @@ int main(int argc, char** argv)
 
     if (argc >= 2)
     {
-        max_n = atoi(argv[1]);
+        max_n = strtoull(argv[1], nullptr, 10);
     }
+
+    cout << "Evaluating Polya conjecture up to " << max_n << endl;
 
     bool debug = false;
     if (argc >= 3 && argv[2] == std::string("--debug"))
