@@ -7,83 +7,68 @@
 #include <chrono>
 
 using namespace std;
+typedef int64_t number;
 
 class PolyaCalculator
 {
-    int total_numbers;
-    int max_prime_to_add;
-    vector<int> primes;
-    vector<short> num_factors = { 0 };
-    int even_factors = 1;
+    number total_numbers;
+    vector<uint8_t> num_factors;
 
     bool do_print_factors = false;
     bool do_print_primes = false;
 
 public:
-    explicit PolyaCalculator(int total_numbers)
+    explicit PolyaCalculator(number total_numbers)
         :
         total_numbers(total_numbers),
-        max_prime_to_add(int(sqrt(total_numbers) + 1e-5))
+        num_factors(total_numbers+1, 0)
     {
+        cerr << "Allocated memory" << endl;
     }
 
     void print_factors() { do_print_factors = true; }
     void print_primes() { do_print_primes = true; }
 
-    short calc_num_prime_factors(int n, int max_prime_idx_to_consider)
+    static number safe_multiply(number prime_power, number prime, number limit)
     {
-        assert((int)num_factors.size() == n - 1);
-        for (int prime_idx = 0; prime_idx <= max_prime_idx_to_consider; ++prime_idx)
-        {
-            auto prime = primes[prime_idx];
-            if (n % prime == 0)
-            {
-                auto factors = num_factors[n / prime - 1] + 1;
-                num_factors.push_back(factors);
-                if (factors % 2 == 0) ++even_factors;
-                return factors;
-            }
-        }
-
-        // no factors: n is prime
-        num_factors.push_back(1);
-        if (n <= max_prime_to_add) primes.push_back(n);
-        return 1;
+        if (limit / prime_power < prime) return limit + 1;
+        return prime_power * prime;
     }
 
     void run()
     {
-        int max_prime_idx_to_consider = -1;
-        int next_prime_square = 4;
+        number count = 0;
 
-        for (int n = 2; n <= total_numbers; ++n)
+        for (number prime = 2; prime <= total_numbers; ++prime)
         {
-            if (n >= next_prime_square)
+            if (prime % 200000 == 0) cerr << ".";
+            if (prime % 10000000 == 0) cerr << endl;
+
+            if (num_factors[prime] != 0) continue; // not prime
+
+            for (number prime_power = prime; prime_power <= total_numbers; prime_power = safe_multiply(prime_power, prime, total_numbers))
             {
-                ++max_prime_idx_to_consider;
-                if (max_prime_idx_to_consider < primes.size() - 1)
+                if (prime_power < 100)
                 {
-                    auto next_prime = primes[max_prime_idx_to_consider + 1];
-                    next_prime_square = next_prime * next_prime;
+                    cerr << prime_power << " ";
                 }
-                else
+
+                for (number n = prime_power; n < total_numbers; n += prime_power)
                 {
-                    // n >= last prime squared, and it's the last item in the primes vector
-                    // This means that either we stopped adding primes because we reached the last prime
-                    // before sqrt(total_numbers), or that there were no primes between the last prime
-                    // and the last prime squared. The latter, however, is impossible due to Bertrand postulate
-                    // (https://en.wikipedia.org/wiki/Bertrand%27s_postulate). 
-                    // So, there are no more primes worth considering. We avoid switching to the next prime
-                    // by setting next_prime_square to a value exceeding total_numbers
-                    next_prime_square = total_numbers + 1;
+                    ++num_factors[n];
                 }
             }
+        }
 
-            auto factors = calc_num_prime_factors(n, max_prime_idx_to_consider);
+        number even_factors = 0;
 
-            // print progress
-            if (n % 200000 == 0) cerr << ".";
-            if (n % 10000000 == 0) cerr << endl << n;
+        for (number n = 2; n < total_numbers; ++n)
+        {
+            auto factors = num_factors[n];
+            if (factors % 2 == 0)
+            {
+                ++even_factors;
+            }
 
             auto odd_factors = n - even_factors;
 
@@ -96,17 +81,9 @@ public:
                 cout << n << ":" << even_factors - odd_factors << endl;
             }
         }
+
         cout << endl;
         cerr << endl;
-
-        if (do_print_primes)
-        {
-            for (auto prime : primes)
-            {
-                cout << prime << " ";
-            }
-            cout << endl;
-        }
     }
 };
 
@@ -123,7 +100,8 @@ void timed_run(PolyaCalculator& calc)
 
 int main(int argc, char** argv)
 {
-    int max_n = 1000 * 1000 * 1000;
+    number max_n = 1000 * 1000 * 1000;
+
     if (argc >= 2)
     {
         max_n = atoi(argv[1]);
@@ -145,5 +123,3 @@ int main(int argc, char** argv)
     timed_run(calc);
     return 0;
 }
-
-
