@@ -35,6 +35,7 @@ public:
 
     void run()
     {
+        cerr << "Applying Eratosthenes sieve..." << endl;
         for (number prime = 2; prime <= total_numbers; ++prime)
         {
             if (prime % 200000 == 0) cerr << ".";
@@ -55,8 +56,9 @@ public:
                 }
             }
         }
+        cerr << "Done with Eratosthenes. Calculating factors" << endl;
 
-        number even_factors = 1;
+        number even_factors = 1; // "1" is considered to have zero factors, which is an even number
 
         for (number n = 2; n < total_numbers; ++n)
         {
@@ -68,13 +70,9 @@ public:
 
             auto odd_factors = n - even_factors;
 
-            if (do_print_factors)
+            if (do_print_factors || even_factors > odd_factors)
             {
-                cout << n << ":" << (unsigned)factors << ":" << odd_factors << ":" << even_factors << endl;
-            }
-            else if (even_factors > odd_factors)
-            {
-                cout << n << ":" << even_factors - odd_factors << endl;
+                cout << n << ": " << odd_factors - even_factors << endl;
             }
         }
 
